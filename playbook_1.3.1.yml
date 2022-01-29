@@ -23,4 +23,4 @@
       line: '\1 biosdevname=0\2'
   - name: Run command grub2-mkconfig
     ansible.builtin.shell:
-      cmd: /bin/bash grub2-mkconfig
+      cmd: /bin/bash grub2-mkconfig -o /boot/grub2/grub.cfg

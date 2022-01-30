@@ -1,0 +1,32 @@
+---
+- name: task1_2
+  hosts: web
+  user: ansible
+  become: true
+  become_method: sudo
+  become_user: root
+
+  tasks:
+  - name: Remove the Apache package
+    yum:
+      name: httpd
+      state: absent
+  - name: Remove file (delete file)
+    ansible.builtin.file:
+      path: /var/www/html/index.html
+      state: absent
+  - name: permit traffic in default zone for https service
+    firewalld:
+      port: 443/tcp
+      permanent: true
+      state: disabled
+  - name: permit traffic in default zone for http service
+    firewalld:
+      port: 80/tcp
+      permanent: true
+      state: disabled
+  - name: Start service firewalld, if not reloaded
+    ansible.builtin.service:
+      name: firewalld
+      state: reloaded
+

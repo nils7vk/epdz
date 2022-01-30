@@ -1,0 +1,48 @@
+---
+- name: task1_1
+  hosts: web
+  user: ansible
+  become: true
+  become_method: sudo
+  become_user: root
+
+  tasks:
+  - name: Install the latest version of Apache
+    yum:
+      name: httpd
+      state: latest
+  - name: Start service httpd, if not started
+    ansible.builtin.service:
+      name: httpd
+      state: started
+  - name: Copy a new "index.html" file into place, backing up the original if it differs from the copied version
+    ansible.builtin.copy:
+      src: /home/ansible/httpd/index.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: '0644'
+      backup: yes
+  - name: httpd reload
+    ansible.builtin.service:
+      name: httpd
+      state: reloaded
+  - name: Start service firewalld, if not started
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+  - name: permit traffic in default zone for https service
+    firewalld:
+      port: 443/tcp
+      permanent: true
+      state: enabled
+  - name: permit traffic in default zone for http service
+    firewalld:
+      port: 80/tcp
+      permanent: true
+      state: enabled
+  - name: Start service firewalld, if not reloaded
+    ansible.builtin.service:
+      name: firewalld
+      state: reloaded
+

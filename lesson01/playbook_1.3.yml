@@ -1,0 +1,20 @@
+---
+- name: task1_3
+  hosts: web
+  user: ansible
+  become: true
+  become_method: sudo
+  become_user: root
+
+  tasks:
+  - name: net.ifnames exist
+    lineinfile:
+      state: present
+      backup: yes
+      dest: /etc/default/grub
+      backrefs: yes
+      regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"'
+  - name: Run command grub2-mkconfig
+    ansible.builtin.shell:
+      cmd: /bin/bash grub2-mkconfig -o /boot/grub2/grub.cfg

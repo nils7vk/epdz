@@ -1,0 +1,20 @@
+---
+- name: create a user
+  hosts: all
+  become: yes
+
+  vars_files:
+    - secret.yml
+
+  tasks:
+    - name: creating user
+      user:
+        name: "{{ item.username }}"
+        password: "{{ pwhash | password_hash('sha512') }}"
+        home: "/home/{{ item.homedir }}"
+        comment: "{{ item.username }}@example.com"
+        update_password: on_create
+      with_items:
+              - {username: Alice, homedir: Alice}
+              - {username: Bob, homedir: Bob}
+              - {username: Carol, homedir: Carol}

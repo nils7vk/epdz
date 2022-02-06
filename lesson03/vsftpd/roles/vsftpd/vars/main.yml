@@ -1,0 +1,18 @@
+---
+# vars file for vsftpd
+supported_distr:
+  - CentOS
+  - RedHat
+  - Debian
+  - Ubuntu
+
+selinux_boolean: "ftpd_anon_write"
+selinux_value: yes
+
+vsftpd_anonymous_enable: YES
+vsftpd_anon_upload_enable: YES
+vsftpd_anon_mkdir_write_enable: YES
+vsftpd_connect_from_port_20: YES
+vsftpd_listen: YES
+vsftpd_listen_ipv6: NO
+vsftpd_local_enable: NO

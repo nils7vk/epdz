@@ -1,0 +1,43 @@
+---
+# tasks file for httpd
+- name: Install Apache (yum)
+  yum:
+    name: httpd
+    state: latest
+  when:
+    - ansible_distribution in supported_distr
+    - ansible_memfree_mb < 256
+
+- name: Start service httpd, if not started
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Copy a new "index.html" file into place, backing up the original if it differs from the copied version
+  template:
+    src: templates/index.html.j2
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  notify: restart_httpd
+
+- name: Start service firewalld, if not started
+  service:
+    name: firewalld
+    state: started
+
+- name: permit traffic in default zone for https service
+  firewalld:
+    port: 443/tcp
+    permanent: true
+    state: enabled
+
+- name: permit traffic in default zone for http service
+  firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+  notify: restart_firewalld

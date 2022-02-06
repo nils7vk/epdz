@@ -1,0 +1,11 @@
+---
+# handlers file for vsftpd
+- name: restart_vsftpd
+  service:
+    name: vsftpd
+    state: restarted
+
+- name: restart_firewalld
+  service:
+    name: firewalld
+    state: restarted

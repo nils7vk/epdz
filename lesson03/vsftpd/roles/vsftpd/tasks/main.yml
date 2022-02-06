@@ -1,0 +1,87 @@
+---
+# tasks file for vsftpd
+- name: Return motd to registered var
+  ansible.builtin.shell: sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+
+- name: Return motd to registered var
+  ansible.builtin.shell: sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+
+- name: Create ftp dir 
+  file:
+    path: /var/ftp/pub/upload
+    state: directory
+    owner: ftp
+    group: ftp
+    mode: '0766'
+
+- name: Install vsftpd (yum)
+  yum:
+    name: vsftpd
+    state: latest
+  when:
+    - ansible_distribution in supported_distr
+    - ansible_memfree_mb < 256
+
+- name: "RedHat | Install related SELinux package on RHEL8"
+  yum:
+    name: 
+      - python3-libsemanage
+      - policycoreutils-python-utils
+    state: present
+
+- name: Start service vsftpd, if not started
+  service:
+    name: vsftpd
+    state: started
+    enabled: yes
+
+- name: Copy a new "vsftpd.conf.j2" file into place, backing up the original if it differs from the copied version
+  template:
+    src: templates/vsftpd.conf.j2
+    dest: /etc/vsftpd/vsftpd.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  notify: restart_vsftpd
+
+- name: Start service firewalld, if not started
+  service:
+    name: firewalld
+    state: started
+
+- name: permit traffic in default zone for vsftpd service
+  firewalld:
+    port: 20/tcp
+    permanent: true
+    state: enabled
+
+- name: permit traffic in default zone for vsftpd service
+  firewalld:
+    port: 21/tcp
+    permanent: true
+    state: enabled
+  notify: restart_firewalld
+
+- name: set SELinux boolean
+  seboolean:
+    name: "{{ selinux_boolean }}"
+    state: "{{ selinux_value }}"
+
+- name: Allow to read files in /var/ftp/
+  community.general.sefcontext:
+    target: "/var/ftp(/.*)?"
+    setype: public_content_t
+    state: present
+
+- name: Apply new SELinux file context to filesystem
+  ansible.builtin.command: restorecon -F -R -v /var/ftp
+
+- name: Allow to write files in /var/ftp/pub/upload
+  community.general.sefcontext:
+    target: "/var/ftp/pub/upload(/.*)?"
+    setype: public_content_rw_t
+    state: present
+
+- name: Apply new SELinux file context to filesystem
+  ansible.builtin.command: restorecon -F -R -v /var/ftp/pub/upload

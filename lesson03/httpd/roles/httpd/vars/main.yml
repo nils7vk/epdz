@@ -1,0 +1,10 @@
+---
+# vars file for httpd
+supported_distr:
+  - CentOS
+  - RedHat
+  - Debian
+  - Ubuntu
+
+page_title: My Landing Page
+page_description: This is my landing page description.

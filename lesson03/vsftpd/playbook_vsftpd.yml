@@ -1,0 +1,11 @@
+---
+- name: task3_2
+  hosts: node1.example.com
+  user: ansible
+  become: true
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+
+  roles:
+    - role: vsftpd
